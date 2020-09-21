@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Publish a Javascript package using git, npm, babel, watch and jest on macos"
+title:  "Publish a Javascript package to npm using git, babel, watch and jest on macos"
 date:   2020-09-19 12:05:50 +0530
 categories: jekyll update
 ---
@@ -122,7 +122,6 @@ In the package.json file, replace the existing entry for "test" inside the "scri
   "dev": "watch 'npm run build' src",
   "build": "babel src -d build",
   "test": "jest build",
-...
 },
 ...
 ```
@@ -159,7 +158,6 @@ npm test
   "build": "babel src -d build",
   "test": "jest build",
   "test:watch": "npm test -- --watch",
-...
 },
 ...
 ```
@@ -173,4 +171,74 @@ Make changes to your code file and check if it is detected and build and test ru
 
 ## link
 
-TBA
+14. Use your package locally before publishing it to npm.
+
+Create a global reference to your package
+
+```shell
+npm link
+```
+
+Create a new folder where you can test your package
+
+```shell
+cd ..
+mkdir test_< pkg name >
+cd test_< pkg name >
+npm init -y
+npm link < pkg name >
+touch index.js
+```
+
+Import and use your package in index.js and check that it works correctly
+
+## npm publish
+
+15. Create a .npmignore file to prevent your source code from being published
+
+```shell
+echo "src" >> .npmignore
+```
+
+16. Install the np package to publish to npm
+
+```shell
+npm install --save-dev np
+```
+
+17. Update package.json to enable publishing. In the package.json file, make the "prepublish" and "release" entries inside the "scripts" object
+
+```json
+...
+"scripts": {
+  "dev": "watch 'npm run build' src",
+  "build": "babel src -d build",
+  "test": "jest build",
+  "test:watch": "npm test -- --watch",
+  "prepublish": "npm run build",
+  "release": "np"
+},
+...
+```
+
+18. Commit your files and update github. This is necessary because npm will not publish unless your git is in order. First create a .gitignore file to suppress unnecessary files from enering into the repository
+
+```shell
+echo -e "node_modules\nbuild" >> .gitignore
+git add -A
+git commit -m "Initial commit"
+git push
+```
+
+19. Create an account on the npmjs.com website if you don't have one already and then publish your package
+
+```shell
+npm add user
+npm run release
+```
+
+20. If you want to unpublish your package
+
+```shell
+npm unpublish <pkg> -f
+``` 
