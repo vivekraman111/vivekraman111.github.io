@@ -17,14 +17,21 @@ categories: jekyll update
 git clone < git url >
 ```
 
-1. Create your project directory and Javascript code file.
+1. Move into the project directory that was created after the above command. Open the directory in your preferred text editor. The command below is for the Sublime Text editor.
+
+```shell
+cd < project dir >
+subl .
+```
+
+1. Create a directory for your Javascript code within the project directory.
 
 ```shell
 mkdir src
 cd src
 touch index.js
 ```
-Write Javascript code in index.js This may be a small function related to your intended library or a placeholder function as shown below. Export your api using the CommonJS approach used by npm
+Open the index.js file in your text editor and write Javascript code in it. This may be a small function related to your intended library or a placeholder function as shown below. Export your api using the CommonJS approach used by npm
 
 ```javascript
 function sayHello(str){
@@ -55,17 +62,18 @@ Note: Babel is useful even in packages intended for npm due to the compatibility
 npm install --save-dev @babel/core @babel/cli @babel/preset-env
 ```
 
-Configure the babel presets to run by adding the babel key to your package.json
+Open the package.json file in the text editor and configure the babel presets to run by adding the babel key. You may add it just after the existing "scripts" key
 
 ```json
 ...
+  "scripts": {...},
   "babel": {
     "presets": [
       [
         "@babel/preset-env"
       ]
     ]
-  }
+  },
 ...
 ```
 
@@ -100,6 +108,8 @@ node
 'hello world'
 ```
 
+Exit from the node repl by pressing Ctrl + C twice or typing .exit
+
 ## unit testing
 
 1. Install the unit testing framework, jest
@@ -126,7 +136,7 @@ cd src
 touch index.test.js
 ```
 
-1. Write Unit test cases in the following format
+1. Open index.test.js in the text editor and write Unit test cases in the following format
 
 ```javascript
 const pkg = require('./index.js')
@@ -144,6 +154,156 @@ npm run build
 npm test
 ```
 
+## git
+1. Create a README.md file with instructions on how to install and use your code. Initially you could just mention that the project is work in progress. First move to the top level of your project directory.
+
+```shell
+touch README.md
+```
+
+Then open the README file in your text editor and add the information in the following format.
+
+```markdown
+# My Pkg name
+
+~```shell
+$ npm install pkg 
+~```
+
+~```javascript
+const pkg = require('pkg')
+
+//ES2015 modules
+import pkg from 'pkg'
+console.log(pkg.sayHello("world"))
+//"hello world"
+
+~```
+
+```
+Note: remove the tildas ~ in the block above
+
+
+1. Commit your files and update github. First create a .gitignore file to suppress unnecessary files from enering into the repository.
+
+```shell
+echo -e "node_modules\nbuild" >> .gitignore
+git add -A
+git commit -m "Initial commit"
+git push
+```
+
+Go to your repository on the git website and check that your files have indeed been uploaded and the README is appearing correctly.
+
+## dev
+1. Develop your required functionality by updating index.js and simultaneously add test cases to index.test.js Keep commiting to git Move to the next step once you are satisfied with the functionalty and want to make it available on npm. Also update the README file.
+
+## link
+
+1. Use your package locally before publishing it to npm.
+
+Create a global reference to your package
+
+```shell
+npm link
+```
+
+Create a new folder where you can test your package
+
+```shell
+cd ..
+mkdir test_< pkg name >
+cd test_< pkg name >
+npm init -y
+npm link < pkg name >
+touch index.js
+```
+
+Import and use your package in index.js You could use the code from the README file and check the output using console.log statements. Check that it works correctly by running it through node
+
+```shell
+node index.js
+```
+
+## npm publish
+
+1. Move back to your project directory
+
+```shell
+cd < project directory >
+```
+
+1. Create a .npmignore file to prevent your source code from being published
+
+```shell
+echo "src" >> .npmignore
+```
+
+1. Install the np package to publish to npm. You could also simply use "npm publish" but the np package carries out several checks which avoids mistakes.
+
+```shell
+npm install --save-dev np
+```
+
+1. Update package.json to enable publishing. In the package.json file, make the "prepublish" and "release" entries inside the "scripts" object
+
+```json
+...
+"scripts": {
+  "build": "babel src -d build",
+  "test": "jest build",
+  "prepublish": "npm run build",
+  "release": "np"
+},
+...
+```
+
+1. Commit your files and update github. This is necessary because np will not publish unless your git is in order. Also tag your git commit with the version number so that you know exactly which git version was published to npm.
+
+```shell
+git add -A
+git commit -m "First Minimum viable product"
+git push
+git tag 0.1.0
+git push --tags
+```
+
+1. Create an account on the npmjs.com website if you don't have one already and authenticate yourself via the command line.
+
+```shell
+npm adduser
+```
+
+Enter the user name, password and one time password from the authenticator app if required
+
+1. You can publish your package either with this command
+
+```shell
+npm run release
+```
+
+Or if you get some weird errors, you can skip the checks and directly publish
+
+```shell
+npm publish
+```
+
+1. Check that the package is published on npmjs.com and using the below command
+
+```shell
+npm info < pkg >
+```
+
+1. If you want to unpublish your package
+
+```shell
+npm unpublish < pkg > -f
+```
+
+## final test
+
+1. Download your package from the npm repository and use it. Follow the same steps given in the link section above. No need to run "npm link" and instead of "npm link < pkg name >" run "npm install < pkg name >"
+
 ## watch
 
 1. Watch your code directory and automatically run build and test when changes are made
@@ -159,7 +319,9 @@ In the package.json file, make the "dev" entry inside the "scripts" object
 "scripts": {
   "dev": "watch 'npm run build' src",
   "build": "babel src -d build",
-  "test": "jest build"
+  "test": "jest build",
+  "prepublish": "npm run build",
+  "release": "np"
 },
 ...
 ```
@@ -180,7 +342,9 @@ Make a change to your code file and check if it is detected and build runs autom
   "dev": "watch 'npm run build' src",
   "build": "babel src -d build",
   "test": "jest build",
-  "test:watch": "npm test -- --watch"
+  "test:watch": "npm test -- --watch",
+  "prepublish": "npm run build",
+  "release": "np"
 },
 ...
 ```
@@ -212,134 +376,6 @@ npm install --save-dev ghooks
 ...
 ```
 
-## git
-1. Create a README.md file with instructions on how to install and use your code. Initially you could just mention that the project is work in progress.
-
-```shell
-touch README.md
-```
-
-```markdown
-  # My Pkg name
-
-  ~```shell
-  $ npm install pkg 
-  ~```
-
-  ~```javascript
-  const pkg = require('pkg')
-
-  //ES2015 modules
-  import pkg from 'pkg'
-  console.log(pkg.sayHello("world"))
-  //"hello world"
-
-  ~```
-
-```
-Note: remove the tildas ~ in the block above
-
-
-1. Commit your files and update github. First create a .gitignore file to suppress unnecessary files from enering into the repository.
-
-```shell
-echo -e "node_modules\nbuild" >> .gitignore
-git add -A
-git commit -m "Initial commit"
-git push
-```
-
-## dev
-1. Develop your required functionality by updating index.js and simultaneously add test cases to index.test.js Keep commiting to git Move to the next step once you are satisfied with the functionalty and want to make it available on npm. Also update the README file.
-
-## link
-
-1. Use your package locally before publishing it to npm.
-
-Create a global reference to your package
-
-```shell
-npm link
-```
-
-Create a new folder where you can test your package
-
-```shell
-cd ..
-mkdir test_< pkg name >
-cd test_< pkg name >
-npm init -y
-npm link < pkg name >
-touch index.js
-```
-
-Import and use your package in index.js Check that it works correctly by running it through node
-
-```shell
-node index.js
-```
-
-## npm publish
-
-1. Create a .npmignore file to prevent your source code from being published
-
-```shell
-echo "src" >> .npmignore
-```
-
-1. Install the np package to publish to npm. You could also simply use "npm publish" but the np package carries out several checks which avoids mistakes.
-
-```shell
-npm install --save-dev np
-```
-
-1. Update package.json to enable publishing. In the package.json file, make the "prepublish" and "release" entries inside the "scripts" object
-
-```json
-...
-"scripts": {
-  "dev": "watch 'npm run build' src",
-  "build": "babel src -d build",
-  "test": "jest build",
-  "test:watch": "npm test -- --watch",
-  "prepublish": "npm run build",
-  "release": "np"
-},
-...
-```
-
-1. Commit your files and update github. This is necessary because np will not publish unless your git is in order. Also tag your git commit with the version number so that you know exactly which git version was published to npm.
-
-```shell
-git add -A
-git commit -m "Final changes"
-git push
-git tag 1.0.0
-git push --tags
-```
-
-1. Create an account on the npmjs.com website if you don't have one already and then publish your package
-
-```shell
-npm adduser
-npm run release
-```
-
-1. Check that the package is published on npmjs.com and using the below command
-
-```shell
-npm info < pkg >
-```
-
-1. If you want to unpublish your package
-
-```shell
-npm unpublish < pkg > -f
-```
-
-## final test
-
-1. Download your package from the npm repository and use it. Follow the same steps given in the link section above. No need to run "npm link" and instead of "npm link < pkg name >" run "npm install < pkg name >"
 
 ## making changes
 
